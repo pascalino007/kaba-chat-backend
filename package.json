@@ -1,0 +1,91 @@
+{
+  
+  "name": "kaba-chat-backend",
+  
+  "version": "1.0.0",
+  
+  "description": "",
+  
+  "license": "ISC",
+  
+  "author": "",
+  
+  "type": "module",
+  
+  "main": "index.js",
+  
+  "scripts": {
+  
+    
+  "test": "echo \"Error: no test specified\" && exit 1",
+  
+    
+  "start": "node server.js"
+  
+  },
+  
+  "dependencies": {
+  
+    
+  "@aws-sdk/client-s3": "^3.901.0",
+  
+    
+  "@graphql-tools/schema": "^10.0.25",
+  
+    
+  "@prisma/client": "^6.16.3",
+  
+    
+  "apollo-server": "^3.13.0",
+  
+    
+  "apollo-server-express": "^3.13.0",
+  
+    
+  "bcryptjs": "^3.0.2",
+  
+    
+  "cors": "^2.8.5",
+  
+    
+  "dotenv": "^17.2.3",
+  
+    
+  "express": "^4.21.2",
+  
+    
+  "graphql": "^15.10.1",
+  
+    
+  "graphql-subscriptions": "^3.0.0",
+  
+    
+  "graphql-ws": "^4.9.0",
+  
+    
+  "jsonwebtoken": "^9.0.2",
+  
+    
+  "multer": "^2.0.2",
+  
+    
+  "nodemon": "^3.1.10",
+  
+    
+  "socket.io": "^4.8.1",
+  
+    
+  "subscriptions-transport-ws": "^0.11.0",
+  
+    
+  "ws": "^8.18.3"
+  
+  },
+  
+  "devDependencies": {
+  
+    
+  "prisma": "^6.16.3"
+  
+  }
+}

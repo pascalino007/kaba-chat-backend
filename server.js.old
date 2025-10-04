@@ -1,0 +1,74 @@
+import { ApolloServer, gql } from "apollo-server";
+import resolvers from "./resolvers.js";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const typeDefs = gql`
+  scalar Date
+
+  type User {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+  }
+
+  type Message {
+    id: ID!
+    text: String!
+    senderId: Int!
+    receiverId: Int!
+    createdAt: Date!
+  }
+
+  type Token {
+    token: String!
+  }
+
+  input UserInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+  }
+
+  input UserSigninInput {
+    email: String!
+    password: String!
+  }
+
+  type Query {
+    users: [User]
+    messagesByUser(receiverId: Int!): [Message]
+  }
+
+  type Mutation {
+    signupUser(userNew: UserInput!): User
+    signinUser(userSignin: UserSigninInput!): Token
+    createMessage(receiverId: Int!, text: String!): Message
+  }
+`;
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: ({ req }) => {
+    const { authorization } = req.headers || {};
+    if (authorization) {
+      try {
+        const { userId } = jwt.verify(authorization, process.env.JWT_SECRET);
+        return { userId };
+      } catch (err) {
+        console.error("JWT verification error:", err);
+        throw new Error("Invalid or expired token");
+      }
+    }
+    return {};
+  },
+});
+
+server.listen().then(({ url }) => {
+  console.log(`Server ready at ${url}`);
+});

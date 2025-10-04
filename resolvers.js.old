@@ -1,0 +1,96 @@
+import pkg from "./generated/prisma/index.js";
+const { PrismaClient } = pkg;
+import { ForbiddenError, AuthenticationError } from "apollo-server-express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { PubSub, withFilter } from "graphql-subscriptions";
+
+const prisma = new PrismaClient();
+const pubsub = new PubSub();
+
+const MESSAGE_TOPIC = "MESSAGE_SENT";
+
+const resolvers = {
+  Query: {
+    users: async (_, __, { userId }) => {
+      if (!userId) throw new ForbiddenError("You must be logged in");
+      return prisma.user.findMany({
+        where: { id: { not: userId } },
+        orderBy: { createdAt: "desc" },
+      });
+    },
+
+    messagesByUser: async (_, { receiverId }, { userId }) => {
+      if (!userId) throw new ForbiddenError("You must be logged in");
+
+      const senderId = Number(userId);
+      const recId = Number(receiverId);
+
+      return prisma.message.findMany({
+        where: {
+          OR: [
+            { senderId, receiverId: recId },
+            { senderId: recId, receiverId: senderId },
+          ],
+        },
+        orderBy: { createdAt: "asc" },
+      });
+    },
+  },
+
+  Mutation: {
+    signupUser: async (_, { userNew }) => {
+      const existingUser = await prisma.user.findUnique({
+        where: { email: userNew.email },
+      });
+      if (existingUser) throw new AuthenticationError("User already exists");
+
+      const hashedPassword = await bcrypt.hash(userNew.password, 10);
+
+      return prisma.user.create({
+        data: { ...userNew, password: hashedPassword },
+      });
+    },
+
+    signinUser: async (_, { userSignin }) => {
+      const user = await prisma.user.findUnique({
+        where: { email: userSignin.email },
+      });
+      if (!user) throw new AuthenticationError("User does not exist");
+
+      const valid = await bcrypt.compare(userSignin.password, user.password);
+      if (!valid) throw new AuthenticationError("Password or Email incorrect");
+
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET);
+      return { token };
+    },
+
+    createMessage: async (_, { receiverId, text, imageUrl }, { userId }) => {
+  if (!userId) throw new ForbiddenError("You must be logged in");
+
+  const message = await prisma.message.create({
+    data: { senderId: userId, receiverId, text, imageUrl },
+  });
+
+  await pubsub.publish(MESSAGE_TOPIC, { messageSent: message });
+  return message;
+   },
+  },
+
+  Subscription: {
+    messageSent: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(MESSAGE_TOPIC),
+        (payload, variables) => {
+          // Only send to subscribers involved in the conversation
+          return (
+            payload.messageSent.receiverId === variables.receiverId ||
+            payload.messageSent.senderId === variables.receiverId
+          );
+        }
+      ),
+    },
+  },
+};
+
+export default resolvers;
