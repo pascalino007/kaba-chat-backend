@@ -70,17 +70,23 @@ io.on("connection", (socket) => {
       const senderId = parseInt(msg.senderId);
       const receiverId = parseInt(msg.receiverId);
       const text = msg.text?.trim();
+      const senderName = msg.senderName?.trim() || `User_${senderId}`; // fallback name
 
       if (!senderId || !receiverId || !text) {
         socket.emit("error", { error: "Invalid message data" });
         return;
       }
 
-      console.log(`📩 Message -> From: ${senderId}, To: ${receiverId}, Text: "${text}"`);
+      console.log(`📩 Message -> From: ${senderName} (${senderId}), To: ${receiverId}, Text: "${text}"`);
 
       // Save message in DB
       const savedMessage = await prisma.message.create({
-        data: { text, senderId, receiverId },
+        data: {
+          text,
+          senderId,
+          receiverId,
+          senderName,
+        },
       });
 
       // Emit message to both sender and receiver if connected
@@ -107,6 +113,7 @@ io.on("connection", (socket) => {
 });
 
 // ---------------------------- REST ENDPOINTS ----------------------------
+
 app.get("/users", async (req, res) => {
   try {
     const messages = await prisma.message.findMany({
@@ -130,13 +137,15 @@ app.get("/users", async (req, res) => {
       }
     }
 
-    res.json(Array.from(userIds)); // Send array of IDs
+    res.json(Array.from(userIds));
   } catch (err) {
     console.error("❌ Failed to fetch chat users:", err);
     res.status(500).json({ error: "Failed to fetch chat users" });
   }
 });
+
 // ---------------------------- UPLOAD IMAGE ----------------------------
+
 const upload = multer({ dest: "uploads/" });
 
 app.post("/upload-image", upload.single("file"), async (req, res) => {
@@ -167,18 +176,9 @@ app.post("/upload-image", upload.single("file"), async (req, res) => {
   }
 });
 
-
-
 // ---------------------------- START SERVER ----------------------------
 
-/* const PORT = process.env.PORT || 5000;
-server.listen(PORT, "192.168.1.67", () =>
-  console.log(`🚀 Server running at http://192.168.1.67:${PORT}`)
-); */
-
-
- const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, "168.231.101.119", () =>
   console.log(`🚀 Server running at http://168.231.101.119:${PORT}`)
-); 
-
+);

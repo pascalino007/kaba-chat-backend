@@ -17,9 +17,10 @@ datasource db {
 
 
 model Message {
-  id         Int      @id @default(autoincrement())
-  text       String
-  senderId   Int      // just a number, not linked to User
-  receiverId Int
-  createdAt  DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  text        String
+  senderId    Int
+  receiverId  Int
+  senderName  String   // 👤 new field for the name or pseudo of the sender
+  createdAt   DateTime @default(now()) // 🕒 can be used as "time" in the UI
 }
