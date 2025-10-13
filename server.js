@@ -25,7 +25,7 @@ const io = new Server(server, {
 });
 
 let clients = {};
-const CUSTOMER_SERVICE_ID = 36572;
+const CUSTOMER_SERVICE_ID = 92109474;
 
 // ---------------------------- SOCKET.IO ----------------------------
 
@@ -178,7 +178,7 @@ server.listen(PORT, "192.168.1.67", () =>
 
 
  const PORT = process.env.PORT || 5000;
-server.listen(PORT, "192.168.1.67", () =>
-  console.log(`🚀 Server running at http://192.168.1.67:${PORT}`)
+server.listen(PORT, "168.231.101.119", () =>
+  console.log(`🚀 Server running at http://168.231.101.119:${PORT}`)
 ); 
 
