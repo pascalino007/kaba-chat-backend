@@ -179,6 +179,6 @@ app.post("/upload-image", upload.single("file"), async (req, res) => {
 // ---------------------------- START SERVER ----------------------------
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, "168.231.101.119", () =>
-  console.log(`🚀 Server running at http://168.231.101.119:${PORT}`)
+server.listen(PORT, "148.230.85.247", () =>
+  console.log(`🚀 Server running at http://148.230.85.247/:${PORT}`)
 );
